@@ -1,19 +1,14 @@
-import logo from './logo.svg';
-import './App.css';
-import Navigation from "./customer/components/Navigation/Navigation.jsx";
-import HomePage from './customer/pages/HomePage/HomePage';
-import Footer from './customer/footer/footer';
-import Product from './customer/components/Product/Product';
-
+import React from "react";
+import { Routes, Route } from "react-router-dom";
+import CustomerRouters from './customer/components/Routers/CustomerRouters.jsx'
 function App() {
   return (
-    <div className=''>
-      <Navigation />
-      <div>
-        {/* <HomePage /> */}
-        <Product />
-      </div>
-      <Footer />
+    <div>
+
+      <Routes>
+        <Route path="/*" element={<CustomerRouters />}></Route>
+      </Routes>
+
     </div>
   );
 }

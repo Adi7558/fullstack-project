@@ -1,22 +1,30 @@
 import React from "react";
-import { Grid, Typography, TextField, Button, Box, Link } from "@mui/material";
+import { Typography, TextField, Button, Box } from "@mui/material";
 
 const Footer = () => {
     return (
         <Box sx={{ bgcolor: "#111", color: "white", px: 6, py: 8 }}>
-            <Grid container spacing={6}>
+            {/* Flex container for columns */}
+            <Box
+                sx={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: 6,
+                    justifyContent: "space-between",
+                }}
+            >
                 {/* Column 1 - Brand */}
-                <Grid item xs={12} sm={6} md={3}>
+                <Box sx={{ flex: "1 1 220px", minWidth: "220px" }}>
                     <Typography variant="h5" fontWeight="bold" gutterBottom>
                         E-Shop
                     </Typography>
                     <Typography variant="body2" color="gray">
                         Your one-stop destination for fashion, electronics, and more.
                     </Typography>
-                </Grid>
+                </Box>
 
                 {/* Column 2 - About Section */}
-                <Grid item xs={12} sm={6} md={3}>
+                <Box sx={{ flex: "1 1 220px", minWidth: "220px" }}>
                     <Typography variant="h6" gutterBottom>
                         About
                     </Typography>
@@ -36,10 +44,10 @@ const Footer = () => {
                             </Button>
                         ))}
                     </Box>
-                </Grid>
+                </Box>
 
                 {/* Column 3 - Customer Service */}
-                <Grid item xs={12} sm={6} md={3}>
+                <Box sx={{ flex: "1 1 220px", minWidth: "220px" }}>
                     <Typography variant="h6" gutterBottom>
                         Customer Service
                     </Typography>
@@ -59,10 +67,10 @@ const Footer = () => {
                             </Button>
                         ))}
                     </Box>
-                </Grid>
+                </Box>
 
                 {/* Column 4 - Newsletter */}
-                <Grid item xs={12} sm={6} md={3}>
+                <Box sx={{ flex: "1 1 220px", minWidth: "220px" }}>
                     <Typography variant="h6" gutterBottom>
                         Subscribe
                     </Typography>
@@ -84,8 +92,8 @@ const Footer = () => {
                             Subscribe
                         </Button>
                     </Box>
-                </Grid>
-            </Grid>
+                </Box>
+            </Box>
 
             {/* Bottom line */}
             <Box
