@@ -1,16 +1,13 @@
 {
   "files": {
-    "main.css": "/fullstack-project/static/css/main.59eac02f.css",
-    "main.js": "/fullstack-project/static/js/main.54c4c936.js",
-    "static/js/453.661466bf.chunk.js": "/fullstack-project/static/js/453.661466bf.chunk.js",
-    "static/media/logo.svg": "/fullstack-project/static/media/logo.6ce24c58023cc2f8fd88fe9d219db6c6.svg",
+    "main.css": "/fullstack-project/static/css/main.b5217053.css",
+    "main.js": "/fullstack-project/static/js/main.2cbc60c2.js",
     "index.html": "/fullstack-project/index.html",
-    "main.59eac02f.css.map": "/fullstack-project/static/css/main.59eac02f.css.map",
-    "main.54c4c936.js.map": "/fullstack-project/static/js/main.54c4c936.js.map",
-    "453.661466bf.chunk.js.map": "/fullstack-project/static/js/453.661466bf.chunk.js.map"
+    "main.b5217053.css.map": "/fullstack-project/static/css/main.b5217053.css.map",
+    "main.2cbc60c2.js.map": "/fullstack-project/static/js/main.2cbc60c2.js.map"
   },
   "entrypoints": [
-    "static/css/main.59eac02f.css",
-    "static/js/main.54c4c936.js"
+    "static/css/main.b5217053.css",
+    "static/js/main.2cbc60c2.js"
   ]
 }
