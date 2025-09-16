@@ -5,10 +5,13 @@ import Navigation from "../Navigation/Navigation";
 import Footer from "../../footer/footer";
 import Product from "../Product/Product";
 import Cart from "../Cart/Cart";
-import Checkout from "../Checkout/Checkout"
+import Checkout from "../Checkout/Checkout";
 import ProductDetails from "../ProductDetails/ProductDetails";
-import Order from "../Order/Order"
-import OrderDetails from "../Order/OrderDetails"; // ✅ use a different name
+import Order from "../Order/Order";
+import OrderDetails from "../Order/OrderDetails";
+import Login from "../Auth/Login";
+import SignUp from "../Auth/SignUp";  // ✅ import Signin
+
 
 const CustomerRouters = () => {
     return (
@@ -18,24 +21,25 @@ const CustomerRouters = () => {
             </div>
 
             <Routes>
-                <Route path='/' element={<HomePage />}></Route>
-                <Route path='/cart' element={<Cart />}></Route>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/cart" element={<Cart />} />
                 <Route path="/:levelOne/:levelTwo/:levelThree" element={<Product />} />
                 <Route path="/product/details" element={<ProductDetails />} />
                 <Route path="/checkout" element={<Checkout />} />
                 <Route path="/account/order" element={<Order />} />
                 <Route path="/account/order/:orderId" element={<OrderDetails />} />
 
+                {/* ✅ New Auth Routes */}
+                <Route path="/signin" element={<Login />} />
+                <Route path="/signup" element={<SignUp />} />
             </Routes>
 
             <div>
                 <Footer />
             </div>
+        </div>
+    );
+};
 
-        </div >
-    )
-}
-
-
-// Make sure you have this at the bottom
+// ✅ export it
 export default CustomerRouters;

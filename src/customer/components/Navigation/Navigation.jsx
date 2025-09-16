@@ -1,7 +1,7 @@
 'use client'
 
 import { Fragment, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import {
   Dialog,
   DialogBackdrop,
@@ -16,24 +16,33 @@ import {
   TabPanel,
   TabPanels,
 } from '@headlessui/react'
-import { Bars3Icon, MagnifyingGlassIcon, ShoppingBagIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { Bars3Icon, ShoppingBagIcon, XMarkIcon } from '@heroicons/react/24/outline'
 
 import navigation from './navigationData'
-
+import AuthService from '../Auth/AuthService'
+import Login from '../Auth/Login'
+import SignUp from '../Auth/SignUp'
 
 export default function Navigation() {
   const [open, setOpen] = useState(false)
-  const [profileOpen, setProfileOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false)
+  const [showSignIn, setShowSignIn] = useState(false)
+  const [showSignUp, setShowSignUp] = useState(false)
+  const navigate = useNavigate()
 
+  const isLoggedIn = !!AuthService.getToken()
 
-  console.log('navigation:', navigation);
+  const handleLogout = () => {
+    AuthService.logout()
+    navigate('/signin')
+  }
 
   return (
     <div className="bg-white">
-
       <p className="flex h-10 items-center justify-center bg-indigo-600 px-4 text-sm font-medium text-white sm:px-6 lg:px-8">
         Get free delivery on orders over $100
       </p>
+
       {/* Mobile menu */}
       <Dialog open={open} onClose={setOpen} className="relative z-40 lg:hidden">
         <DialogBackdrop className="fixed inset-0 bg-black/25 transition-opacity duration-300 ease-linear" />
@@ -116,18 +125,29 @@ export default function Navigation() {
 
             {/* Mobile Sign In / Create Account */}
             <div className="border-t border-gray-200 px-4 py-6">
-              <Link
-                to="/signin"
-                className="-m-2 block p-2 font-medium text-gray-900"
-              >
-                Sign In
-              </Link>
-              <Link
-                to="/signup"
-                className="-m-2 block p-2 font-medium text-gray-900 mt-2"
-              >
-                Create Account
-              </Link>
+              {isLoggedIn ? (
+                <button
+                  onClick={handleLogout}
+                  className="-m-2 block p-2 font-medium text-red-600"
+                >
+                  Logout
+                </button>
+              ) : (
+                <>
+                  <button
+                    onClick={() => setShowSignIn(true)}
+                    className="-m-2 block p-2 font-medium text-gray-900"
+                  >
+                    Sign In
+                  </button>
+                  <button
+                    onClick={() => setShowSignUp(true)}
+                    className="-m-2 block p-2 font-medium text-gray-900 mt-2"
+                  >
+                    Create Account
+                  </button>
+                </>
+              )}
             </div>
           </DialogPanel>
         </div>
@@ -135,7 +155,6 @@ export default function Navigation() {
 
       {/* Desktop Navigation */}
       <header className="relative bg-white">
-
         <nav aria-label="Top" className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="border-b border-gray-200">
             <div className="flex h-16 items-center">
@@ -231,21 +250,31 @@ export default function Navigation() {
 
               {/* Right Side (Cart + Sign In / Create Account) */}
               <div className="ml-auto flex items-center space-x-4">
-                {/* Sign In / Create Account */}
-                <Link
-                  to="/signin"
-                  className="text-sm font-medium text-gray-700 hover:text-gray-800"
-                >
-                  Sign In
-                </Link>
-                <Link
-                  to="/signup"
-                  className="text-sm font-medium text-gray-700 hover:text-gray-800"
-                >
-                  Create Account
-                </Link>
+                {isLoggedIn ? (
+                  <button
+                    onClick={handleLogout}
+                    className="text-sm font-medium text-red-600 hover:text-red-800"
+                  >
+                    Logout
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => setShowSignIn(true)}
+                      className="text-sm font-medium text-gray-700 hover:text-gray-800"
+                    >
+                      Sign In
+                    </button>
+                    <button
+                      onClick={() => setShowSignUp(true)}
+                      className="text-sm font-medium text-gray-700 hover:text-gray-800"
+                    >
+                      Create Account
+                    </button>
+                  </>
+                )}
 
-                {/* Cart Icon */}
+                {/* Cart */}
                 <Link to="/cart" className="group -m-2 flex items-center p-2">
                   <ShoppingBagIcon className="h-6 w-6 text-gray-400 group-hover:text-gray-500" />
                   <span className="ml-2 text-sm font-medium text-gray-700 group-hover:text-gray-800">
@@ -253,14 +282,14 @@ export default function Navigation() {
                   </span>
                 </Link>
 
-                {/* User Profile Dropdown */}
+                {/* Profile Dropdown */}
                 <div className="relative">
                   <button
                     onClick={() => setProfileOpen(!profileOpen)}
                     className="flex items-center focus:outline-none"
                   >
                     <img
-                      src="https://i.pravatar.cc/40" // replace with your profile image URL
+                      src="https://i.pravatar.cc/40"
                       alt="Profile"
                       className="w-10 h-10 rounded-full object-cover border-2 border-indigo-600"
                     />
@@ -282,7 +311,7 @@ export default function Navigation() {
                       </Link>
                       <button
                         className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-indigo-100"
-                        onClick={() => console.log("Logout")}
+                        onClick={handleLogout}
                       >
                         Logout
                       </button>
@@ -290,11 +319,42 @@ export default function Navigation() {
                   )}
                 </div>
               </div>
-
             </div>
           </div>
         </nav>
       </header>
+
+      {/* SignIn Modal */}
+      <Dialog open={showSignIn} onClose={setShowSignIn} className="relative z-50">
+        <DialogBackdrop className="fixed inset-0 bg-black/50" />
+        <div className="fixed inset-0 flex items-center justify-center">
+          <DialogPanel className="bg-white p-6 rounded-lg shadow-md w-full max-w-md">
+            <Login />
+            <button
+              onClick={() => setShowSignIn(false)}
+              className="mt-4 text-sm text-red-600"
+            >
+              Close
+            </button>
+          </DialogPanel>
+        </div>
+      </Dialog>
+
+      {/* SignUp Modal */}
+      <Dialog open={showSignUp} onClose={setShowSignUp} className="relative z-50">
+        <DialogBackdrop className="fixed inset-0 bg-black/50" />
+        <div className="fixed inset-0 flex items-center justify-center">
+          <DialogPanel className="bg-white p-6 rounded-lg shadow-md w-full max-w-md">
+            <SignUp />
+            <button
+              onClick={() => setShowSignUp(false)}
+              className="mt-4 text-sm text-red-600"
+            >
+              Close
+            </button>
+          </DialogPanel>
+        </div>
+      </Dialog>
     </div>
   )
 }
