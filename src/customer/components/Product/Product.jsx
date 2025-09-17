@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import {
     Dialog,
     DialogBackdrop,
@@ -23,11 +23,9 @@ import {
 } from '@heroicons/react/20/solid'
 import { mens_kurta } from '../../Data/mens_kurta'
 import ProductCard from './ProductCard'
-import { filters, singleFilter } from './FilterData'
+import { filters } from './FilterData'
 import FilterListIcon from '@mui/icons-material/FilterList';
-import { Navigate, useNavigate } from 'react-router-dom'
-import { useLocation } from 'react-router-dom';
-
+import { useNavigate, useLocation } from 'react-router-dom'
 
 const sortOptions = [
     { name: 'Price: Low to High', href: '#', current: false },
@@ -40,45 +38,128 @@ function classNames(...classes) {
 
 export default function Product() {
     const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
+    const [currentPage, setCurrentPage] = useState(1)
+    const productsPerPage = 8
+
     const location = useLocation()
     const navigate = useNavigate();
 
+    // 🔹 Read search params
+    const readSearchParams = () => {
+        const sp = new URLSearchParams(location.search)
+        const getAllCombined = (key) => [
+            ...sp.getAll(key),
+            ...sp.getAll(`${key}[]`)
+        ]
+        return { sp, getAllCombined }
+    }
+
+    // 🔹 Handle filter changes
     const handleFilter = (value, sectionId) => {
         const searchParams = new URLSearchParams(location.search);
+        const existing = [
+            ...searchParams.getAll(sectionId),
+            ...searchParams.getAll(`${sectionId}[]`)
+        ];
 
-        // Get all existing values for this filter
-        const existingValues = searchParams.getAll(sectionId);
+        const valueLower = String(value).trim().toLowerCase()
 
-        if (existingValues.includes(value)) {
-            // Remove the value if already selected
-            const newValues = existingValues.filter((v) => v !== value);
-
-            searchParams.delete(sectionId); // remove old
-            newValues.forEach((v) => searchParams.append(sectionId, v)); // add remaining
+        if (existing.map(v => v.toLowerCase()).includes(valueLower)) {
+            const newValues = existing.filter((v) => v.toLowerCase() !== valueLower)
+            searchParams.delete(sectionId)
+            searchParams.delete(`${sectionId}[]`)
+            newValues.forEach((v) => searchParams.append(sectionId, v.toLowerCase()))
         } else {
-            // Add the new value
-            searchParams.append(sectionId, value);
+            searchParams.append(sectionId, valueLower)
         }
 
-        // Update the URL
-        navigate(`?${searchParams.toString()}`);
-    };
+        const q = searchParams.toString()
+        if (q) navigate(`${location.pathname}?${q}`)
+        else navigate(location.pathname)
+    }
 
+    const { getAllCombined } = readSearchParams()
+    const selectedColors = getAllCombined('color').map((v) => v.trim().toLowerCase())
+    const selectedPrices = getAllCombined('price').map((v) => v.trim())
+    const selectedSizes = getAllCombined('size').map((v) => v.trim().toLowerCase())
+    const selectedBrands = getAllCombined('brand').map((v) => v.trim().toLowerCase())
+    const selectedDiscounts = getAllCombined('discount').map((v) => Number(v.trim()))
 
-    // 🐞 Debug
-    console.log('🔍 filters data:', filters)
-    console.log('🔍 singleFilter data:', singleFilter)
+    // 🔹 Reset page when filters change
+    useEffect(() => {
+        setCurrentPage(1)
+    }, [location.search])
+
+    // 🔹 Check if a filter is selected
+    const isChecked = (sectionId, value) => {
+        const all = getAllCombined(sectionId).map((v) => String(v).trim().toLowerCase())
+        return all.includes(String(value).trim().toLowerCase())
+    }
+
+    // 🔹 Filter products
+    const filteredProducts = useMemo(() => {
+        return mens_kurta.filter((product) => {
+            let matches = true
+
+            if (selectedColors.length > 0) {
+                matches = matches && selectedColors.some((c) =>
+                    String(product.color || '').trim().toLowerCase() === c
+                )
+            }
+
+            if (selectedPrices.length > 0) {
+                matches = matches && selectedPrices.some((range) => {
+                    const [minRaw, maxRaw] = range.split('-').map((x) => x?.trim())
+                    const min = Number(minRaw ?? 0)
+                    const max = Number(maxRaw ?? Infinity)
+                    const value = Number(product.discountedPrice ?? product.price ?? 0)
+                    if (Number.isNaN(min) || Number.isNaN(max) || Number.isNaN(value)) return false
+                    return value >= min && value <= max
+                })
+            }
+
+            if (selectedSizes.length > 0) {
+                matches = matches && Array.isArray(product.size) &&
+                    selectedSizes.some((selSize) => {
+                        const sel = String(selSize).trim().toLowerCase()
+                        return product.size.some((sizeObj) => {
+                            const prodSize = typeof sizeObj === 'string'
+                                ? sizeObj.trim().toLowerCase()
+                                : String(sizeObj?.name ?? '').trim().toLowerCase()
+                            return prodSize === sel
+                        })
+                    })
+            }
+
+            if (selectedBrands.length > 0) {
+                matches = matches && selectedBrands.includes(String(product.brand || '').trim().toLowerCase())
+            }
+
+            if (selectedDiscounts.length > 0) {
+                matches = matches && selectedDiscounts.some((discount) => Number(product.discountPersent ?? 0) >= discount)
+            }
+
+            return matches
+        })
+    }, [location.search, location.pathname])
+
+    // 🔹 Pagination logic
+    const totalPages = Math.ceil(filteredProducts.length / productsPerPage)
+    const paginatedProducts = useMemo(() => {
+        const start = (currentPage - 1) * productsPerPage
+        const end = start + productsPerPage
+        return filteredProducts.slice(start, end)
+    }, [filteredProducts, currentPage])
 
     return (
         <div className="bg-white">
-            {/* ================= MOBILE FILTERS ================= */}
+            {/* MOBILE FILTERS */}
             <Dialog
                 open={mobileFiltersOpen}
                 onClose={setMobileFiltersOpen}
                 className="relative z-40 lg:hidden"
             >
                 <DialogBackdrop className="fixed inset-0 bg-black/25" />
-
                 <div className="fixed inset-0 z-40 flex">
                     <DialogPanel className="ml-auto max-w-xs flex w-full flex-col overflow-y-auto bg-white pt-4 pb-6 shadow-xl">
                         <div className="flex items-center justify-between px-4">
@@ -93,7 +174,6 @@ export default function Product() {
                             </button>
                         </div>
 
-                        {/* Mobile Filters Form */}
                         <form className="mt-4 border-t border-gray-200">
                             {filters.map((section) => (
                                 <Disclosure
@@ -105,9 +185,7 @@ export default function Product() {
                                         <>
                                             <h3 className="-mx-2 -my-3 flow-root">
                                                 <DisclosureButton className="flex w-full items-center justify-between bg-white px-2 py-3 text-gray-400 hover:text-gray-500">
-                                                    <span className="font-medium text-gray-900">
-                                                        {section.name}
-                                                    </span>
+                                                    <span className="font-medium text-gray-900">{section.name}</span>
                                                     <span className="ml-6 flex items-center">
                                                         {open ? (
                                                             <MinusIcon className="h-5 w-5" aria-hidden="true" />
@@ -129,6 +207,8 @@ export default function Product() {
                                                                 name={`${section.id}[]`}
                                                                 defaultValue={option.value}
                                                                 type="checkbox"
+                                                                checked={isChecked(section.id, option.value)}
+                                                                onChange={() => handleFilter(option.value, section.id)}
                                                                 className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                                                             />
                                                             <label
@@ -145,52 +225,15 @@ export default function Product() {
                                     )}
                                 </Disclosure>
                             ))}
-
-                            {/* Single Filters (Radios) */}
-                            {singleFilter.map((section) => (
-                                <div
-                                    key={`mobile-single-${section.id}`}
-                                    className="border-t border-gray-200 px-4 py-6"
-                                >
-                                    <h3 className="flow-root">
-                                        <span className="font-medium text-gray-900">{section.name}</span>
-                                    </h3>
-                                    <div className="pt-4 space-y-4">
-                                        {section.options.map((option, optionIdx) => (
-                                            <div
-                                                key={`mobile-single-${section.id}-${option.value}-${optionIdx}`}
-                                                className="flex gap-3 items-center"
-                                            >
-                                                <input
-                                                    onChange={() => handleFilter(option.value, section.id)}
-                                                    id={`mobile-single-${section.id}-${optionIdx}`}
-                                                    name={section.id}
-                                                    value={option.value}
-                                                    type="checkbox"
-                                                    className="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
-                                                />
-                                                <label
-                                                    htmlFor={`mobile-single-${section.id}-${optionIdx}`}
-                                                    className="text-gray-500"
-                                                >
-                                                    {option.label}
-                                                </label>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            ))}
                         </form>
                     </DialogPanel>
                 </div>
             </Dialog>
 
-            {/* ================= DESKTOP FILTERS + PRODUCTS ================= */}
+            {/* DESKTOP FILTERS + PRODUCTS */}
             <main className="mx-auto px-4 sm:px-6 lg:px-20">
                 <div className="flex items-baseline justify-between border-b border-gray-200 pt-24 pb-6">
-                    <h1 className="text-4xl font-bold tracking-tight text-gray-900">
-                        New Arrivals
-                    </h1>
+                    <h1 className="text-4xl font-bold tracking-tight text-gray-900">New Arrivals</h1>
 
                     <div className="flex items-center">
                         <Menu as="div" className="relative inline-block text-left">
@@ -240,16 +283,13 @@ export default function Product() {
                     </div>
                 </div>
 
-                {/* Products Section */}
                 <section aria-labelledby="products-heading" className="pt-6 pb-24">
-                    <h2 id="products-heading" className="sr-only">
-                        Products
-                    </h2>
+                    <h2 id="products-heading" className="sr-only">Products</h2>
 
                     <div className="grid grid-cols-1 gap-x-8 gap-y-10 lg:grid-cols-5">
                         {/* Desktop Filters */}
                         <div>
-                            <div className='py-10 flex justify-between items-centre'>
+                            <div className='py-10 flex justify-between items-center'>
                                 <h1 className="text-lg opacity-50 font-bold">Filters</h1>
                                 <FilterListIcon />
                             </div>
@@ -264,14 +304,8 @@ export default function Product() {
                                             <DisclosureButton className="group flex w-full items-center justify-between bg-white py-3 text-sm text-gray-400 hover:text-gray-500">
                                                 <span className="font-medium text-gray-900">{section.name}</span>
                                                 <span className="ml-6 flex items-center">
-                                                    <PlusIcon
-                                                        aria-hidden="true"
-                                                        className="h-5 w-5 group-data-open:hidden"
-                                                    />
-                                                    <MinusIcon
-                                                        aria-hidden="true"
-                                                        className="h-5 w-5 group-not-data-open:hidden"
-                                                    />
+                                                    <PlusIcon aria-hidden="true" className="h-5 w-5 group-data-open:hidden" />
+                                                    <MinusIcon aria-hidden="true" className="h-5 w-5 group-not-data-open:hidden" />
                                                 </span>
                                             </DisclosureButton>
                                         </h3>
@@ -288,6 +322,7 @@ export default function Product() {
                                                             name={section.id}
                                                             value={option.value}
                                                             type="checkbox"
+                                                            checked={isChecked(section.id, option.value)}
                                                             onChange={() => handleFilter(option.value, section.id)}
                                                             className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"
                                                         />
@@ -309,10 +344,48 @@ export default function Product() {
                         {/* Product Grid */}
                         <div className="lg:col-span-4 w-full">
                             <div className="flex flex-wrap justify-center bg-white py-5">
-                                {mens_kurta.map((item, idx) => (
-                                    <ProductCard key={idx} product={item} />
-                                ))}
+                                {paginatedProducts.length > 0 ? (
+                                    paginatedProducts.map((item, idx) => (
+                                        <ProductCard key={idx} product={item} />
+                                    ))
+                                ) : (
+                                    <p className="text-gray-500 text-lg font-medium">No products found</p>
+                                )}
                             </div>
+
+                            {/* Pagination Controls */}
+                            {totalPages > 1 && (
+                                <div className="flex justify-center mt-6 space-x-2">
+                                    <button
+                                        onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                                        disabled={currentPage === 1}
+                                        className="px-3 py-1 border rounded disabled:opacity-50"
+                                    >
+                                        Prev
+                                    </button>
+
+                                    {[...Array(totalPages)].map((_, idx) => {
+                                        const page = idx + 1
+                                        return (
+                                            <button
+                                                key={page}
+                                                onClick={() => setCurrentPage(page)}
+                                                className={`px-3 py-1 border rounded ${currentPage === page ? 'bg-indigo-600 text-white' : ''}`}
+                                            >
+                                                {page}
+                                            </button>
+                                        )
+                                    })}
+
+                                    <button
+                                        onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                                        disabled={currentPage === totalPages}
+                                        className="px-3 py-1 border rounded disabled:opacity-50"
+                                    >
+                                        Next
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </section>
