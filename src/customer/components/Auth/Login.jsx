@@ -1,7 +1,7 @@
 import { useState } from "react";
 import AuthService from "./AuthService";
 
-export default function Login() {
+export default function Login({ switchToSignUp = () => { } }) {
     const [form, setForm] = useState({ email: "", password: "" });
 
     const handleChange = (e) => {
@@ -12,7 +12,7 @@ export default function Login() {
         e.preventDefault();
         try {
             const token = await AuthService.login(form);
-            localStorage.setItem("jwtToken", token); // ✅ Save JWT
+            localStorage.setItem("jwtToken", token);
             alert("Login Successful!");
         } catch (error) {
             console.error("Login Error:", error.response?.data);
@@ -27,7 +27,6 @@ export default function Login() {
             </h2>
 
             <form onSubmit={handleSubmit} className="space-y-5">
-                {/* Email */}
                 <div>
                     <label className="block text-sm font-medium text-gray-700">Email</label>
                     <input
@@ -41,7 +40,6 @@ export default function Login() {
                     />
                 </div>
 
-                {/* Password */}
                 <div>
                     <label className="block text-sm font-medium text-gray-700">Password</label>
                     <input
@@ -55,7 +53,6 @@ export default function Login() {
                     />
                 </div>
 
-                {/* Submit Button */}
                 <button
                     type="submit"
                     className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-200"
@@ -64,13 +61,16 @@ export default function Login() {
                 </button>
             </form>
 
-            {/* Switch to signup */}
             <p className="text-sm text-gray-600 text-center mt-6">
                 Don’t have an account?{" "}
-                <span className="text-indigo-600 font-medium hover:underline cursor-pointer">
+                <span
+                    onClick={switchToSignUp}
+                    className="text-indigo-600 font-medium hover:underline cursor-pointer"
+                >
                     Sign up
                 </span>
             </p>
         </div>
     );
 }
+

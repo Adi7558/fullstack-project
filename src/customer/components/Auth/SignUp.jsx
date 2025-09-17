@@ -1,10 +1,7 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import AuthService from "./AuthService";
 
-export default function SignUp() {
-    const navigate = useNavigate(); // <-- Add this for navigation
-
+export default function SignUp({ switchToLogin }) {
     const [form, setForm] = useState({
         username: "",
         firstName: "",
@@ -21,20 +18,13 @@ export default function SignUp() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const payload = {
-                username: form.username,
-                firstName: form.firstName,
-                lastName: form.lastName,
-                mobile: form.mobile,
-                email: form.email,
-                password: form.password
-            };
+            const payload = { ...form };
             const response = await AuthService.signup(payload);
             console.log("Signup Success:", response.data);
             alert("Signup Successful!");
 
-            // Redirect to login page after signup
-            navigate("/login");
+            // After successful signup, show login modal
+            if (switchToLogin) switchToLogin();
         } catch (error) {
             console.error("Signup Error:", error.response?.data);
             alert(
@@ -133,7 +123,7 @@ export default function SignUp() {
                     />
                 </div>
 
-                {/* Submit Button */}
+                {/* Submit */}
                 <button
                     type="submit"
                     className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-200"
@@ -147,7 +137,7 @@ export default function SignUp() {
                 Already have an account?{" "}
                 <span
                     className="text-indigo-600 font-medium hover:underline cursor-pointer"
-                    onClick={() => navigate("/login")}
+                    onClick={switchToLogin}
                 >
                     Sign in
                 </span>

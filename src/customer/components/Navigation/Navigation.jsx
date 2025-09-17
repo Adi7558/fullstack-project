@@ -7,7 +7,6 @@ import {
   DialogBackdrop,
   DialogPanel,
   Popover,
-  PopoverButton,
   PopoverGroup,
   PopoverPanel,
   Tab,
@@ -34,7 +33,13 @@ export default function Navigation() {
 
   const handleLogout = () => {
     AuthService.logout()
-    navigate('/signin')
+    setProfileOpen(false)
+    navigate('/')
+  }
+
+  const navigateTo = (href) => {
+    setOpen(false) // close mobile menu
+    navigate(href) // navigate to the link
   }
 
   return (
@@ -85,9 +90,13 @@ export default function Navigation() {
                             src={item.imageSrc}
                             className="aspect-square w-full rounded-lg bg-gray-100 object-cover group-hover:opacity-75"
                           />
-                          <Link to={item.href} className="mt-6 block font-medium text-gray-900">
+                          {/* mobile: button to navigate & close */}
+                          <button
+                            onClick={() => navigateTo(item.href)}
+                            className="mt-6 block font-medium text-gray-900"
+                          >
                             {item.name}
-                          </Link>
+                          </button>
                           <p className="mt-1">Shop now</p>
                         </div>
                       ))}
@@ -99,9 +108,12 @@ export default function Navigation() {
                         <ul className="mt-6 flex flex-col space-y-6">
                           {section?.items?.map((item) => (
                             <li key={item.name} className="flow-root">
-                              <Link to={item.href} className="-m-2 block p-2 text-gray-500">
+                              <button
+                                onClick={() => navigateTo(item.href)}
+                                className="-m-2 block p-2 text-gray-500"
+                              >
                                 {item.name}
-                              </Link>
+                              </button>
                             </li>
                           ))}
                         </ul>
@@ -116,38 +128,14 @@ export default function Navigation() {
             <div className="space-y-6 border-t border-gray-200 px-4 py-6">
               {navigation?.pages?.map((page) => (
                 <div key={page.name} className="flow-root">
-                  <Link to={page.href} className="-m-2 block p-2 font-medium text-gray-900">
-                    {page.name}
-                  </Link>
-                </div>
-              ))}
-            </div>
-
-            {/* Mobile Sign In / Create Account */}
-            <div className="border-t border-gray-200 px-4 py-6">
-              {isLoggedIn ? (
-                <button
-                  onClick={handleLogout}
-                  className="-m-2 block p-2 font-medium text-red-600"
-                >
-                  Logout
-                </button>
-              ) : (
-                <>
                   <button
-                    onClick={() => setShowSignIn(true)}
+                    onClick={() => navigateTo(page.href)}
                     className="-m-2 block p-2 font-medium text-gray-900"
                   >
-                    Sign In
+                    {page.name}
                   </button>
-                  <button
-                    onClick={() => setShowSignUp(true)}
-                    className="-m-2 block p-2 font-medium text-gray-900 mt-2"
-                  >
-                    Create Account
-                  </button>
-                </>
-              )}
+                </div>
+              ))}
             </div>
           </DialogPanel>
         </div>
@@ -182,56 +170,69 @@ export default function Navigation() {
                 </button>
               </div>
 
-              {/* Categories */}
+              {/* Categories (DESKTOP) */}
               <PopoverGroup className="hidden lg:ml-8 lg:block lg:self-stretch">
                 <div className="flex h-full space-x-8">
                   {navigation?.categories?.map((category) => (
                     <Popover key={category.name} className="flex">
-                      <div className="relative flex">
-                        <PopoverButton className="group relative flex items-center justify-center text-sm font-medium text-gray-700 hover:text-gray-800">
-                          {category.name}
-                        </PopoverButton>
-                      </div>
-                      <PopoverPanel className="absolute inset-x-0 top-full z-20 w-full bg-white text-sm text-gray-500">
-                        <div className="relative bg-white">
-                          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                            <div className="grid grid-cols-2 gap-x-8 gap-y-10 py-16">
-                              <div className="col-start-2 grid grid-cols-2 gap-x-8">
-                                {category?.featured?.map((item) => (
-                                  <div key={item.name} className="group relative text-base sm:text-sm">
-                                    <img
-                                      src={item.imageSrc}
-                                      alt={item.imageAlt}
-                                      className="aspect-square w-full rounded-lg bg-gray-100 object-cover group-hover:opacity-75"
-                                    />
-                                    <Link to={item.href} className="mt-6 block font-medium text-gray-900">
-                                      {item.name}
-                                    </Link>
-                                    <p className="mt-1">Shop now</p>
-                                  </div>
-                                ))}
-                              </div>
+                      <>
+                        <div className="relative flex">
+                          {/* Popover.Button toggles the popover */}
+                          <Popover.Button className="group relative flex items-center justify-center text-sm font-medium text-gray-700 hover:text-gray-800">
+                            {category.name}
+                          </Popover.Button>
+                        </div>
 
-                              <div className="row-start-1 grid grid-cols-3 gap-x-8 gap-y-10 text-sm">
-                                {category?.sections?.map((section) => (
-                                  <div key={section.name}>
-                                    <p className="font-medium text-gray-900">{section.name}</p>
-                                    <ul className="mt-6 space-y-6">
-                                      {section?.items?.map((item) => (
-                                        <li key={item.name} className="flex">
-                                          <Link to={item.href} className="hover:text-gray-800">
-                                            {item.name}
-                                          </Link>
-                                        </li>
-                                      ))}
-                                    </ul>
-                                  </div>
-                                ))}
+                        <PopoverPanel className="absolute inset-x-0 top-full z-20 w-full bg-white text-sm text-gray-500">
+                          <div className="relative bg-white">
+                            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                              <div className="grid grid-cols-2 gap-x-8 gap-y-10 py-16">
+                                <div className="col-start-2 grid grid-cols-2 gap-x-8">
+                                  {category?.featured?.map((item) => (
+                                    <div key={item.name} className="group relative text-base sm:text-sm">
+                                      {/* Make image + title clickable using Popover.Button as Link.
+                                          Popover.Button will close the popover automatically when clicked. */}
+                                      <Popover.Button as={Link} to={item.href} className="block">
+                                        <img
+                                          src={item.imageSrc}
+                                          alt={item.imageAlt}
+                                          className="aspect-square w-full rounded-lg bg-gray-100 object-cover group-hover:opacity-75"
+                                        />
+                                        <span className="mt-6 block font-medium text-gray-900">
+                                          {item.name}
+                                        </span>
+                                      </Popover.Button>
+                                      <p className="mt-1">Shop now</p>
+                                    </div>
+                                  ))}
+                                </div>
+
+                                <div className="row-start-1 grid grid-cols-3 gap-x-8 gap-y-10 text-sm">
+                                  {category?.sections?.map((section) => (
+                                    <div key={section.name}>
+                                      <p className="font-medium text-gray-900">{section.name}</p>
+                                      <ul className="mt-6 space-y-6">
+                                        {section?.items?.map((item) => (
+                                          <li key={item.name} className="flex">
+                                            {/* Use Popover.Button as Link so popover closes after click */}
+                                            <Popover.Button
+                                              as={Link}
+                                              to={item.href}
+                                              className="hover:text-gray-800"
+                                            >
+                                              {item.name}
+                                            </Popover.Button>
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    </div>
+                                  ))}
+                                </div>
                               </div>
                             </div>
                           </div>
-                        </div>
-                      </PopoverPanel>
+                        </PopoverPanel>
+                      </>
                     </Popover>
                   ))}
 
@@ -248,32 +249,8 @@ export default function Navigation() {
                 </div>
               </PopoverGroup>
 
-              {/* Right Side (Cart + Sign In / Create Account) */}
+              {/* Right Side (Cart + Avatar Dropdown) */}
               <div className="ml-auto flex items-center space-x-4">
-                {isLoggedIn ? (
-                  <button
-                    onClick={handleLogout}
-                    className="text-sm font-medium text-red-600 hover:text-red-800"
-                  >
-                    Logout
-                  </button>
-                ) : (
-                  <>
-                    <button
-                      onClick={() => setShowSignIn(true)}
-                      className="text-sm font-medium text-gray-700 hover:text-gray-800"
-                    >
-                      Sign In
-                    </button>
-                    <button
-                      onClick={() => setShowSignUp(true)}
-                      className="text-sm font-medium text-gray-700 hover:text-gray-800"
-                    >
-                      Create Account
-                    </button>
-                  </>
-                )}
-
                 {/* Cart */}
                 <Link to="/cart" className="group -m-2 flex items-center p-2">
                   <ShoppingBagIcon className="h-6 w-6 text-gray-400 group-hover:text-gray-500" />
@@ -299,7 +276,7 @@ export default function Navigation() {
                     <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-md py-1 z-50">
                       <button
                         className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-indigo-100"
-                        onClick={() => console.log("Go to Profile")}
+                        onClick={() => console.log('Go to Profile')}
                       >
                         Profile
                       </button>
@@ -309,12 +286,25 @@ export default function Navigation() {
                       >
                         My Orders
                       </Link>
-                      <button
-                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-indigo-100"
-                        onClick={handleLogout}
-                      >
-                        Logout
-                      </button>
+
+                      {isLoggedIn ? (
+                        <button
+                          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-indigo-100"
+                          onClick={handleLogout}
+                        >
+                          Logout
+                        </button>
+                      ) : (
+                        <button
+                          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-indigo-100"
+                          onClick={() => {
+                            setProfileOpen(false)
+                            setShowSignIn(true)
+                          }}
+                        >
+                          Login
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>
@@ -329,11 +319,13 @@ export default function Navigation() {
         <DialogBackdrop className="fixed inset-0 bg-black/50" />
         <div className="fixed inset-0 flex items-center justify-center">
           <DialogPanel className="bg-white p-6 rounded-lg shadow-md w-full max-w-md">
-            <Login />
-            <button
-              onClick={() => setShowSignIn(false)}
-              className="mt-4 text-sm text-red-600"
-            >
+            <Login
+              switchToSignUp={() => {
+                setShowSignIn(false) // close login modal
+                setShowSignUp(true) // open signup modal
+              }}
+            />
+            <button onClick={() => setShowSignIn(false)} className="mt-4 text-sm text-red-600">
               Close
             </button>
           </DialogPanel>
@@ -345,11 +337,13 @@ export default function Navigation() {
         <DialogBackdrop className="fixed inset-0 bg-black/50" />
         <div className="fixed inset-0 flex items-center justify-center">
           <DialogPanel className="bg-white p-6 rounded-lg shadow-md w-full max-w-md">
-            <SignUp />
-            <button
-              onClick={() => setShowSignUp(false)}
-              className="mt-4 text-sm text-red-600"
-            >
+            <SignUp
+              switchToLogin={() => {
+                setShowSignUp(false) // close signup
+                setShowSignIn(true) // open login
+              }}
+            />
+            <button onClick={() => setShowSignUp(false)} className="mt-4 text-sm text-red-600">
               Close
             </button>
           </DialogPanel>
