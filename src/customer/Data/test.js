@@ -1,3 +1,3 @@
-import { updatedSaree } from "./Saree.js";
+import { kurtis, kurtaPage1 } from './womens_kurta.js'
 
-console.log(updatedSaree);
+console.log(kurtis);

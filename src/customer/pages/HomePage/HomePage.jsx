@@ -7,7 +7,7 @@ import Login from "../../components/Auth/Login";
 import SignUp from "../../components/Auth/SignUp";
 import mens_shirt from "../../Data/mens_shirt.json"
 import { sareePage1 } from "../../Data/Saree";
-import women_dress from "../../Data/women_dress.json";
+import women_dresses from '../../Data/women_dresses.json'
 
 const HomePage = () => {
     const [showAuth, setShowAuth] = useState(null);
@@ -31,7 +31,7 @@ const HomePage = () => {
                 <HomeSectionCarousel data={mensShoesPage1} SectionName={"Men's Shoes"} />
                 <HomeSectionCarousel data={mens_shirt} SectionName={"Men's Shirt"} />
                 <HomeSectionCarousel data={sareePage1} SectionName={"Women's Saree"} />
-                <HomeSectionCarousel data={women_dress} SectionName={"Women's Dress"} />
+                <HomeSectionCarousel data={women_dresses} SectionName={"Women's Dress"} />
             </div>
         </div>
     );

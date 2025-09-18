@@ -21,11 +21,30 @@ import {
     PlusIcon,
     Squares2X2Icon,
 } from '@heroicons/react/20/solid'
-import { mens_kurta } from '../../Data/mens_kurta'
+
+// 🔹 Import all JSON datasets
+import women_jeans from '../../Data/women_jeans.json'
+import women_dresses from '../../Data/women_dresses.json'
+import women_lenghaCholi from '../../Data/LehngaCholi.json'
+import women_top from '../../Data/women_top.json'
+import { gounsPage1 } from '../../Data/womens_gouns.js'
+import { kurtaPage1 } from '../../Data/womens_kurta.js'
+// import women_tshirts from '../../Data/women_tshirts.json'  // ❌ missing
+// import women_jackets from '../../Data/women_jackets.json'  // ❌ missing
+import { sareePage1 } from '../../Data/Saree.js'
+import { mens_kurta } from '../../Data/mens_kurta.js'
+import mens_jeans from "../../Data/mens_jeans.json"
+import mens_shirt from "../../Data/mens_shirt.json"
+// import men_sweaters from '../../Data/men_sweaters.json'  // ❌ missing
+// import men_tshirts from '../../Data/men_tshirts.json'    // ❌ missing
+// import men_jackets from '../../Data/men_jackets.json'    // ❌ missing
+// import men_activewear from '../../Data/men_activewear.json'  // ❌ missing
+
+
 import ProductCard from './ProductCard'
 import { filters } from './FilterData'
 import FilterListIcon from '@mui/icons-material/FilterList';
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate, useLocation, useParams } from 'react-router-dom'
 
 const sortOptions = [
     { name: 'Price: Low to High', href: '#', current: false },
@@ -36,13 +55,41 @@ function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
 }
 
+// 🔹 Mapping of categories to JSON files
+const productDataMap = {
+    women: {
+        jeans: women_jeans,
+        dresses: women_dresses,
+        tops: women_top,
+        'lengha-choli': women_lenghaCholi,
+        // 't-shirts': women_tshirts,
+        // jackets: women_jackets,
+        gowns: gounsPage1,
+        sarees: sareePage1,
+        kurtas: kurtaPage1,
+    },
+    men: {
+        kurtas: mens_kurta,
+        shirts: mens_shirt,
+        jeans: mens_jeans,
+        // sweaters: men_sweaters,
+        // 't-shirts': men_tshirts,
+        // jackets: men_jackets,
+        // activewear: men_activewear,
+    },
+}
+
 export default function Product() {
     const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
     const [currentPage, setCurrentPage] = useState(1)
     const productsPerPage = 8
 
     const location = useLocation()
-    const navigate = useNavigate();
+    const navigate = useNavigate()
+    const { levelOne, levelTwo, levelThree } = useParams()
+
+    // 🔹 Get correct dataset from map
+    const data = productDataMap[levelOne]?.[levelThree] || []
 
     // 🔹 Read search params
     const readSearchParams = () => {
@@ -98,7 +145,7 @@ export default function Product() {
 
     // 🔹 Filter products
     const filteredProducts = useMemo(() => {
-        return mens_kurta.filter((product) => {
+        return data.filter((product) => {
             let matches = true
 
             if (selectedColors.length > 0) {
@@ -141,7 +188,7 @@ export default function Product() {
 
             return matches
         })
-    }, [location.search, location.pathname])
+    }, [location.search, location.pathname, data])
 
     // 🔹 Pagination logic
     const totalPages = Math.ceil(filteredProducts.length / productsPerPage)
